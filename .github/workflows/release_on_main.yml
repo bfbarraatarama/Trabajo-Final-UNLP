@@ -1,0 +1,129 @@
+name: Release on main
+
+on:
+  push:
+    branches: ["main"]
+    paths-ignore:
+      - "CITATION.cff"
+      - "README.md"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Obtener último tag semántico (o v0.0.0)
+        id: lasttag
+        shell: bash
+        run: |
+          set -e
+          TAG=$(git describe --tags --match 'v[0-9]*' --abbrev=0 2>/dev/null || echo v0.0.0)
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+
+      - name: Calcular siguiente versión (major/minor/patch)
+        id: semver
+        shell: bash
+        run: |
+          set -e
+          LAST="${{ steps.lasttag.outputs.tag }}"
+          LAST="${LAST#v}"
+          IFS='.' read -ra P <<< "$LAST"
+          MAJOR=${P[0]:-0}
+          MINOR=${P[1]:-0}
+          PATCH=${P[2]:-0}
+          MSG="${{ github.event.head_commit.message }}"
+          shopt -s nocasematch
+          if [[ "$MSG" =~ \[bump:major\] ]]; then
+            MAJOR=$((MAJOR+1)); MINOR=0; PATCH=0
+          elif [[ "$MSG" =~ \[bump:minor\] ]]; then
+            MINOR=$((MINOR+1)); PATCH=0
+          else
+            PATCH=$((PATCH+1))
+          fi
+          NEXT="v${MAJOR}.${MINOR}.${PATCH}"
+          echo "tag=$NEXT" >> "$GITHUB_OUTPUT"
+
+      - name: Instalar yq (Windows)
+        shell: pwsh
+        run: |
+          Invoke-WebRequest -Uri https://github.com/mikefarah/yq/releases/download/v4.44.3/yq_windows_amd64.exe -OutFile $env:RUNNER_TEMP\yq.exe
+          echo "$env:RUNNER_TEMP" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+
+      - name: Actualizar CITATION.cff
+        id: bump_citation
+        shell: bash
+        run: |
+          set -e
+          DATE=$(date +%F)
+          NEXT="${{ steps.semver.outputs.tag }}"
+          export DATE NEXT
+          yq -i '.version = env(NEXT) | .date-released = env(DATE)' CITATION.cff || true
+          if git diff --quiet -- CITATION.cff; then
+            echo "changed=false" >> $GITHUB_OUTPUT
+          else
+            echo "changed=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Commit de cambios
+        if: steps.bump_citation.outputs.changed == 'true'
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add CITATION.cff README.md || true
+          git commit -m "chore: bump CITATION.cff to ${{ steps.semver.outputs.tag }}"
+          git push
+
+      - name: Crear tag
+        shell: bash
+        run: |
+          set -e
+          TAG="${{ steps.semver.outputs.tag }}"
+          if git rev-parse -q --verify "refs/tags/$TAG" >/dev/null; then
+            echo "Tag $TAG ya existe"
+          else
+            git tag -a "$TAG" -m "Release $TAG"
+            git push origin "$TAG"
+          fi
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install deps
+        shell: bash
+        run: |
+          pip install -r requirements.txt
+          pip install -e .
+          pip install pyinstaller pyinstaller-hooks-contrib
+
+      - name: Build GUI.exe
+        shell: cmd
+        run: |
+          pyinstaller gui/GUI.py --onefile --console ^
+            --distpath gui/dist ^
+            --workpath gui/build ^
+            --specpath gui ^
+            --add-data "%CD%\gui\logos.png;." ^
+            --add-data "%CD%\LICENSE;." ^
+            --paths "%CD%" ^
+            --collect-submodules src
+
+      - name: Crear GitHub Release y subir GUI.exe
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.semver.outputs.tag }}
+          files: |
+            gui/dist/GUI.exe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

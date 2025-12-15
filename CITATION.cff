@@ -1,0 +1,11 @@
+cff-version: 1.2.0
+message: "Si usa este software, por favor cítelo."
+type: software
+title: "Método de los Paneles Bidimensional, Multielemento y No Estacionario"
+authors:
+  - family-names: "Barra Atarama"
+    given-names: "Bruno F."
+repository-code: "https://github.com/bfbarraatarama/Trabajo-Final-UNLP"
+version: "v0.0.13"
+date-released: 2025-12-15
+license: "PolyForm-Noncommercial-1.0.0"

@@ -1,0 +1,13 @@
+__pycache__
+
+.venv
+.vscode
+
+gui/build/
+gui/dist/
+Ejemplos/rec/animación
+
+TrabajoFinal.egg-info
+_desusado
+
+setup_venv.bat
