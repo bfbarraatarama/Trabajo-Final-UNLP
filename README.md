@@ -7,6 +7,37 @@
 - **Licencia:** PolyForm Noncommercial License 1.0.0 — ver [LICENSE](LICENSE)  
 - **SPDX:** PolyForm-Noncommercial-1.0.0  
 
+## Resumen del proyecto
+
+Simulador aerodinámico bidimensional desarrollado íntegramente en Python, basado en el método de los paneles, que permite:
+
+- Análisis estacionario y no estacionario  
+- Configuraciones multielemento  
+- Cálculo de Cp, Cl y Cm  
+- Evolución de estelas discretas  
+- Cinemáticas prescritas y aeroelásticas  
+- Interfaz gráfica ejecutable  
+- API en Python para automatización y desarrollos avanzados
+
+El proyecto incluye:
+- Implementación completa en Python  
+- GUI portátil  
+- Notebooks de validación  
+- Comparaciones con XFoil y referencias clásicas
+
+## Resultados ilustrativos
+
+Algunos ejemplos obtenidos con el **simulador**:
+
+![Ejemplo](/Ejemplos/rec/ejemplo_readme.png)
+
+Los notebooks de la carpeta Ejemplos reproducen estas simulaciones.
+
+Capturas de la **GUI**:
+
+![GUI 1](/Ejemplos/rec/GUI_1.png)
+![GUI 2](/Ejemplos/rec/GUI_2.png)
+
 ## Motivación
 El estudio del flujo alrededor de cuerpos aerodinámicos en problemas no estacionarios es un aspecto fundamental en la ingeniería aeroespacial ya que permite analizar las fuerzas y momentos que actúan sobre vehículos y estructuras inmersos en un fluido con el que interactúan y evolucionan de forma conjunta con el pasar del tiempo.
 
@@ -22,7 +53,7 @@ Esta herramienta propone un equilibrio entre fidelidad de los resultados y el co
 
 En particular, en este trabajo se desarrollará el método de los paneles bidimensional, incompresible, no viscoso, estacionario y no estacionario, multielemento, de paneles rectos con distribuciones de dobletes constantes y vórtices puntuales y con la aplicación de la condición de Neumann.  
 
-La bibliografía respecto al tema es vasta, pero muchas veces se encuentra en un formato el cual creo, personalmente, que no ofrece una conexión clara y completa entre la matemática resultante del método y una potencial implementación, lo que considero esencial para un primer acercamiento al método de los paneles.
+La bibliografía respecto al tema es vasta, pero muchas veces se encuentra en un formato que frecuentemente no presenta una conexión clara y completa entre la matemática resultante del método y una potencial implementación, lo que considero esencial para un primer acercamiento al método de los paneles.
 
 Por primer acercamiento no quiero dar la impresión de "incompletitud", sino remarcar que la aplicación desarrollada abarca una pequeña fracción de la amplia familia de formulaciones del método de los paneles. Cada una de las variantes existentes presenta desafíos propios y está orientada a resolver problemas con características particulares, o similares pero con diferente desempeño numérico o diferentes capacidades algorítmicas. En este sentido, si emprendiera la tarea de implementar la mayoría de estas variantes con fines prácticos, considero que el punto de partida natural sería precisamente el que aborda este trabajo. Así, a partir de los conceptos adquiridos y lecciones aprendidas aquí, podrían desarrollarse las demás variantes con mayor solvencia.
 
